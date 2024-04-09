@@ -13,5 +13,6 @@
   <ItemGroup>
     <ProjectReference Include="..\EduNexBL\EduNexBL.csproj" />
   </ItemGroup>
+	
 
 </Project>
