@@ -6,21 +6,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EDuNexDB.Entites
+namespace EduNexDB.Entites
 {
     public class Answer
     {
         [Key]
         public int AnswerId { get; set; }
 
-        [ForeignKey("Question")]
-        public int QuestionId { get; set; }
-        public Question? Question { get; set; }
-
         [Required]
-        public string Text { get; set; }
+        public string Header { get; set; } = null!; 
 
         [Required]
         public bool IsCorrect { get; set; }
+
+        public int QuestionId { get; set; }
+        public Question? Question { get; set; }
     }
 }

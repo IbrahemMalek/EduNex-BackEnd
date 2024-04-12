@@ -5,9 +5,16 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
-namespace EDuNexDB.Context
+namespace EduNexDB.Context
 {
-    internal class EduNexContext:DbContext
+    public class EduNexContext:DbContext
     {
+        public EduNexContext(DbContextOptions<EduNexContext> options) : base(options)
+        {
+
+        }
+
+
+
     }
 }

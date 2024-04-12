@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34607.119
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EduNexAPI", "EduNexAPI\EduNexAPI.csproj", "{B6930D00-8245-4EDF-96E2-6D8696954DFE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EduNexAPI", "EduNexAPI\EduNexAPI.csproj", "{B6930D00-8245-4EDF-96E2-6D8696954DFE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EDuNexDB", "EDuNexDB\EDuNexDB.csproj", "{AB1FE6EF-9106-4F01-AD69-7AD1BE143DAE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EduNexDB", "EDuNexDB\EduNexDB.csproj", "{AB1FE6EF-9106-4F01-AD69-7AD1BE143DAE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EduNexBL", "EduNexBL\EduNexBL.csproj", "{64C512CF-DCB5-478A-8D0C-DB8E074D5305}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EduNexBL", "EduNexBL\EduNexBL.csproj", "{64C512CF-DCB5-478A-8D0C-DB8E074D5305}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

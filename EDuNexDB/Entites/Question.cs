@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EDuNexDB.Entites
+namespace EduNexDB.Entites
 {
     public class Question
     {

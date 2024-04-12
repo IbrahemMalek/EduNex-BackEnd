@@ -1,4 +1,7 @@
 
+using EduNexDB.Context;
+using Microsoft.EntityFrameworkCore;
+
 namespace EduNexAPI
 {
     public class Program
@@ -10,6 +13,9 @@ namespace EduNexAPI
             // Add services to the container.
 
             builder.Services.AddControllers();
+            builder.Services.AddDbContext<EduNexContext>(
+            options => options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServer"))
+            );
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
