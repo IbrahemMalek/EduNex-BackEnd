@@ -1,4 +1,5 @@
 
+using EduNexBL.AutoMapper;
 using EduNexDB.Context;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,6 +18,8 @@ namespace EduNexAPI
             options => options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServer"))
             );
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            builder.Services.AddAutoMapper(typeof(MappingProfile));
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
