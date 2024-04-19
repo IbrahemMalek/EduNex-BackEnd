@@ -8,29 +8,28 @@ using System.Threading.Tasks;
 
 namespace EduNexDB.Entites
 {
+ 
     public class Exam
     {
         [Key]
         public int ExamId { get; set; }
 
         [Required]
-        public string Title { get; set; }
+        public string Title { get; set; } = null!; 
 
         [Required]
-        public DateTime Date { get; set; }
+        public DateTime StartDateTime { get; set; }
+        [Required]
+        public DateTime EndDateTime { get; set; }
+        [Required]
+        public int Duration { get; set; }
 
         [Required]
-        public int NumberOfQuestions { get; set; }
-
+        public string Type { get; set; } = null!; 
         [Required]
-        public string Type { get; set; }
-
-        [ForeignKey("Lecture")]
-        public int LectureId { get; set; }
-        public Lecture? Lecture { get; set; }
-
-        [ForeignKey("Student")]
-        public int StudentId { get; set; }
-        public Student? Student { get; set; }
+        //public int? LectureId { get; set; }
+        //public Lecture? Lecture { get; set; }
+        public ICollection<Question>? Questions { get; set; }
+        public ICollection<StudentExam>? StudentExams { get; set; }
     }
 }

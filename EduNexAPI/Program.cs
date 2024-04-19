@@ -1,6 +1,11 @@
 
 using EduNexBL.AutoMapper;
+using EduNexBL.Base;
+using EduNexBL.IRepository;
+using EduNexBL.Repository;
+using EduNexBL.UnitOfWork;
 using EduNexDB.Context;
+using EduNexDB.Entites;
 using Microsoft.EntityFrameworkCore;
 
 namespace EduNexAPI
@@ -19,6 +24,10 @@ namespace EduNexAPI
             );
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddAutoMapper(typeof(MappingProfile));
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<IExam, ExamRepo>();
+            builder.Services.AddScoped<IStudent, StudentRepo>();
+            builder.Services.AddScoped<IStudentExam, StudentExamRepo>();
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

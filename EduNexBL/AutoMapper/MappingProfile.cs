@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using EduNexBL.DTOs;
+using EduNexDB.Entites;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +13,13 @@ namespace EduNexBL.AutoMapper
     {
         public MappingProfile()
         {
-            
+            CreateMap<ExamDto, Exam>()
+                        .ForMember(dest => dest.Questions, opt => opt.MapFrom(src => src.Questions));
+            CreateMap<Exam, ExamDto>();
+            CreateMap<QuestionDto, Question>();
+            CreateMap<Question, QuestionDto >();
+            CreateMap<AnswerDto, Answer>();
+            CreateMap<Answer, AnswerDto>();
         }
     }
 }

@@ -1,29 +1,24 @@
-﻿using System;
+﻿using EduNexBL.ENums;
+using EduNexDB.Entites;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EduNexDB.Entites
+namespace EduNexBL.DTOs
 {
-
-    public class Question
+    public class QuestionDto
     {
-        [Key]
         public int QuestionId { get; set; }
-
         [Required]
         public string Header { get; set; } = null!;
-
         [Required]
-        public string Type { get; set; } = null!; 
+        [EnumDataType(typeof(QuestionType))]
+        public string Type { get; set; } = null!;
         [Required]
         public int Points { get; set; }
-        public ICollection<Answer>? Answers { get; set; } = null!; 
-        public int ExamId { get; set; }
-        public Exam? Exam { get; set; }
-
+        public IEnumerable<AnswerDto> Answers { get; set; } = null!; 
     }
 }

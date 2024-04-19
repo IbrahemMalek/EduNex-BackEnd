@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EduNexDB.Context;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,18 +9,18 @@ using System.Threading.Tasks;
 
 namespace EduNexBL.Base
 {
-    internal class Repository<T>: IRepository<T> where T : class
+    public class Repository<T>: IRepository<T> where T : class
     {
-        private readonly DbContext _dbContext;
+        private readonly EduNexContext _dbContext;
 
-        public Repository(DbContext dbContext)
+        public Repository(EduNexContext dbContext)
         {
             _dbContext = dbContext;
         }
 
         public async Task<T?> GetById(int id)
         {
-            return await _dbContext.Set<T>().SingleOrDefaultAsync();
+            return await _dbContext.Set<T>().FindAsync(id);
         }
 
         public async Task<IEnumerable<T>> GetAll()

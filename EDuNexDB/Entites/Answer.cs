@@ -18,7 +18,7 @@ namespace EduNexDB.Entites
 
         [Required]
         public bool IsCorrect { get; set; }
-
+        [Required]
         public int QuestionId { get; set; }
         public Question? Question { get; set; }
     }

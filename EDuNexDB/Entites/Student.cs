@@ -53,11 +53,11 @@ namespace EduNexDB.Entites
         [Required]
         public string NationalId { get; set; }
 
-        [Required]
-        public string Password { get; set; }
-
         [ForeignKey("Level")]
         public int LevelId { get; set; }
         public Level? Level { get; set; }
+
+        public ICollection<StudentExam>? StudentExams { get; set; }
+
     }
 }
