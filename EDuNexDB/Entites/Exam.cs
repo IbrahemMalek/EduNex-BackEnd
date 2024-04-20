@@ -26,9 +26,9 @@ namespace EduNexDB.Entites
 
         [Required]
         public string Type { get; set; } = null!; 
-        [Required]
-        //public int? LectureId { get; set; }
-        //public Lecture? Lecture { get; set; }
+   
+        public int LectureId { get; set; }
+        public virtual Lecture? Lecture { get; set; }
         public ICollection<Question>? Questions { get; set; }
         public ICollection<StudentExam>? StudentExams { get; set; }
     }

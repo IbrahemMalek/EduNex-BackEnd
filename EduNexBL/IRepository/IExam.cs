@@ -1,4 +1,5 @@
 ﻿using EduNexBL.Base;
+using EduNexBL.DTOs;
 using EduNexBL.ENums;
 using EduNexDB.Entites;
 using System;
@@ -14,6 +15,7 @@ namespace EduNexBL.IRepository
         Task<IEnumerable<Exam>> GetAllExamsWithQuestions();
         Task<Exam> GetExamByIdWithQuestionsAndAnswers(int examId);
         Task<ExamStartResult> StartExam(int studentId, int examId);
+        Task<ExamSubmitResultWithDetails> SubmitExam(int examId, ExamSubmissionDto examSubmissionDto);
 
 
     }

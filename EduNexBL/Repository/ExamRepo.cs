@@ -59,31 +59,94 @@ namespace EduNexBL.Repository
             return ExamStartResult.Success;
         }
 
-        public async Task<ExamSubmitResult> SubmitExam(ExamSubmissionDto examSubmissionDto)
+        public async Task<ExamSubmitResultWithDetails> SubmitExam(int examId,ExamSubmissionDto examSubmissionDto)
         {
-            if (!IsStudentStartedExam(examSubmissionDto.StudentId, examSubmissionDto.ExamId))
+            var result = new ExamSubmitResultWithDetails();
+            result.SubmitResult = ValidateExamSubmission(examId,examSubmissionDto);
+
+            if (result.SubmitResult != ExamSubmitResult.Success)
+                return result;
+
+            await SaveSubmissionToDB(examId, examSubmissionDto);
+            EndExam(examSubmissionDto.StudentId, examId);
+
+            var exam = await GetExamByIdWithQuestionsAndAnswers(examId);
+            if (exam == null)
+            {
+                result.SubmitResult = ExamSubmitResult.NotFound;
+                return result;
+            }
+
+            result.ExamName = exam.Title;
+            result.ExamType = exam.Type;
+            result.ExamGrade = await CalcTotalExamGrade(examId);
+            result.StudentGrade = CalculateStudentGrade(examSubmissionDto);
+
+            result.StudentAnswersWithCorrectAnswers = GetStudentAnswersWithCorrectAnswers(examSubmissionDto);
+
+            await UpdateStudentExamScore(examSubmissionDto.StudentId, examId, result.StudentGrade);
+
+            return result;
+        }
+
+        private async Task SaveSubmissionToDB(int examId,ExamSubmissionDto examSubmissionDto)
+        {
+            var submissions = MapExamSubmissionToEntities(examId,examSubmissionDto);
+            await _context.StudentsAnswersSubmissions.AddRangeAsync(submissions);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateStudentExamScore(int studentId, int examId, int studentGrade)
+        {
+            var studentExam = await _context.StudentExam.FirstOrDefaultAsync(se => se.StudentId == studentId && se.ExamId == examId);
+
+            if (studentExam != null)
+            {
+                studentExam.Score = studentGrade;
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                throw new Exception("Student exam record not found.");
+            }
+        }
+
+        private async Task<int> CalcTotalExamGrade(int examId)
+        {
+            var exam = await GetExamByIdWithQuestionsAndAnswers(examId);
+            return exam.Questions.Sum(question => question.Points);
+        }
+
+        private ExamSubmitResult ValidateExamSubmission(int examId, ExamSubmissionDto examSubmissionDto)
+        {
+            if (!IsStudentStartedExam(examSubmissionDto.StudentId, examId))
                 return ExamSubmitResult.NotStarted;
 
-            await SaveSubmissionToDB(examSubmissionDto);
-            EndStudentExam(examSubmissionDto.StudentId, examSubmissionDto.ExamId);
+            // Add more validation logic if needed
 
-            int studentGrade = CalculateStudentGrade(examSubmissionDto);
             return ExamSubmitResult.Success;
         }
 
-        private bool IsExamAvailable(Exam exam)
+        private void EndExam(int studentId, int examId)
         {
-            var currentTime = DateTime.Now;
-            return currentTime >= exam.StartDateTime && currentTime <= exam.EndDateTime;
+            var studentExam = _context.StudentExam.FirstOrDefault(se => se.StudentId == studentId && se.ExamId == examId);
+            if (studentExam != null)
+            {
+                studentExam.EndTime = DateTime.Now;
+                _context.SaveChanges();
+            }
         }
+
 
         private bool IsStudentStartedExam(int studentId, int examId)
         {
-            return _context.StudentExam
-                .Any(se => se.StudentId == studentId && se.ExamId == examId && se.StartTime != null);
+            var studentExam = _context.StudentExam
+                .FirstOrDefault(se => se.StudentId == studentId && se.ExamId == examId && se.StartTime != null);
+
+            return studentExam != null;
         }
 
-        private async Task SaveSubmissionToDB(ExamSubmissionDto examSubmissionDto)
+        private List<StudentsAnswersSubmissions> MapExamSubmissionToEntities(int examId,ExamSubmissionDto examSubmissionDto)
         {
             var submissions = new List<StudentsAnswersSubmissions>();
 
@@ -94,25 +157,15 @@ namespace EduNexBL.Repository
                     var submission = new StudentsAnswersSubmissions
                     {
                         StudentId = examSubmissionDto.StudentId,
-                        ExamId = examSubmissionDto.ExamId,
+                        ExamId = examId,
                         QuestionId = answer.QuestionId,
                         AnswerId = selectedAnswerId
                     };
-                    await _context.StudentsAnswersSubmissions.AddAsync(submission);
+                    submissions.Add(submission);
                 }
             }
 
-            await _context.SaveChangesAsync();
-        }
-
-        private void EndStudentExam(int studentId, int examId)
-        {
-            var studentExam = _context.StudentExam
-                .FirstOrDefault(se => se.StudentId == studentId && se.ExamId == examId);
-            if (studentExam != null)
-                studentExam.EndTime = DateTime.Now;
-
-            _context.SaveChanges();
+            return submissions;
         }
 
         private int CalculateStudentGrade(ExamSubmissionDto examSubmissionDto)
@@ -123,14 +176,54 @@ namespace EduNexBL.Repository
             {
                 if (IsCorrectAnswer(submittedQuestion))
                 {
-                    var question = _context.Questions
-                        .FirstOrDefault(q => q.QuestionId == submittedQuestion.QuestionId);
-                    if (question != null)
-                        studentGrade += question.Points;
+                    var question = _context.Questions.SingleOrDefault(q => q.QuestionId == submittedQuestion.QuestionId);
+                    studentGrade += question.Points;
                 }
             }
 
             return studentGrade;
+        }
+
+        private List<QuestionWithAnswersAndState> GetStudentAnswersWithCorrectAnswers(ExamSubmissionDto examSubmissionDto)
+        {
+            var studentAnswersWithCorrectAnswers = new List<QuestionWithAnswersAndState>();
+
+            foreach (var submittedQuestion in examSubmissionDto.Answers)
+            {
+                var question = _context.Questions
+                    .Include(q => q.Answers)
+                    .FirstOrDefault(q => q.QuestionId == submittedQuestion.QuestionId);
+
+                if (question == null)
+                    continue;
+
+                var questionWithAnswersAndState = new QuestionWithAnswersAndState
+                {
+                    QuestionId = question.QuestionId,
+                    QuestionHeader = question.Header,
+                    QuestionType = question.Type,
+                    AnswerChoices = question.Answers.Select(answer => new AnswerChoice
+                    {
+                        AnswerId = answer.AnswerId,
+                        AnswerHeader = answer.Header
+                    }).ToList(),
+                    StudentAnswerIds = submittedQuestion.SelectedAnswersIds,
+                    CorrectAnswerIds = GetCorrectAnswerIdsForQuestion(question.QuestionId),
+                    IsCorrect = IsCorrectAnswer(submittedQuestion)
+                };
+
+                studentAnswersWithCorrectAnswers.Add(questionWithAnswersAndState);
+            }
+
+            return studentAnswersWithCorrectAnswers;
+        }
+
+        private List<int> GetCorrectAnswerIdsForQuestion(int questionId)
+        {
+            return _context.Answers
+                .Where(answer => answer.QuestionId == questionId && answer.IsCorrect)
+                .Select(answer => answer.AnswerId)
+                .ToList();
         }
 
         private bool IsCorrectAnswer(SubmittedQuestionDto submittedQuestionDto)
@@ -141,24 +234,22 @@ namespace EduNexBL.Repository
             if (submittedAnswerIds == null || submittedAnswerIds.Count != correctAnswerIds.Count)
                 return false;
 
-            var sortedSubmittedAnswerIds = submittedAnswerIds.OrderBy(id => id).ToList();
-            var sortedCorrectAnswerIds = correctAnswerIds.OrderBy(id => id).ToList();
+            submittedAnswerIds.Sort();
+            correctAnswerIds.Sort();
 
-            for (int i = 0; i < sortedCorrectAnswerIds.Count; i++)
+            for (int i = 0; i < submittedAnswerIds.Count; i++)
             {
-                if (sortedCorrectAnswerIds[i] != sortedSubmittedAnswerIds[i])
+                if (submittedAnswerIds[i] != correctAnswerIds[i])
                     return false;
             }
 
             return true;
         }
 
-        private List<int> GetCorrectAnswerIdsForQuestion(int questionId)
+        private bool IsExamAvailable(Exam exam)
         {
-            return _context.Answers
-                .Where(answer => answer.QuestionId == questionId && answer.IsCorrect)
-                .Select(answer => answer.AnswerId)
-                .ToList();
+            var currentTime = DateTime.Now;
+            return currentTime >= exam.StartDateTime && currentTime <= exam.EndDateTime;
         }
     }
 }

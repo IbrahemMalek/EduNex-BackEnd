@@ -100,7 +100,7 @@ namespace EduNexAPI.Controllers
 
 
         [HttpPost("{id}/start")]
-        public async Task<IActionResult> StartExam(int id,[FromBody] StartExamRequestDto request)
+        public async Task<IActionResult> StartExam(int id, [FromBody] StartExamRequestDto request)
         {
             // Validate the request model
             if (!ModelState.IsValid)
@@ -138,8 +138,13 @@ namespace EduNexAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            return Ok();
-        }
+            var response = await _unitOfWork.ExamRepo.SubmitExam(id,submission);
 
+            if (response.SubmitResult == ExamSubmitResult.Success)
+                return Ok(response);
+            else
+                return BadRequest();
+
+        }
     }
 }

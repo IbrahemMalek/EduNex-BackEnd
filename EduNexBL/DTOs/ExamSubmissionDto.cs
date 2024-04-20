@@ -11,8 +11,7 @@ namespace EduNexBL.DTOs
     {
         [Required]
         public int StudentId { get; set; }
-        [Required]
-        public int ExamId { get; set; }
+  
         [Required]
         public List<SubmittedQuestionDto> Answers { get; set; } = null!; 
     }
